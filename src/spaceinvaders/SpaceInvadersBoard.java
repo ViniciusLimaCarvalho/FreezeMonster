@@ -30,13 +30,16 @@ public class SpaceInvadersBoard extends AbstractBoard{
 
 
 
-    protected void createBadSprites() {  // create sprites
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 6; j++) {
-                BomberSprite alien = new BomberSprite(Commons.ALIEN_INIT_X + 18 * j,
-                        Commons.ALIEN_INIT_Y + 18 * i);
-                badSprites.add(alien);
-            }
+    protected void createBadSprites() {  // cria 10 monstros em posições aleatórias
+        Random rand = new Random();
+        int totalAliens = 7;
+
+        for (int i = 0; i < totalAliens; i++) {
+            int x = rand.nextInt(Commons.BOARD_WIDTH - Commons.ALIEN_WIDTH);
+            int y = rand.nextInt(Commons.GROUND / 2); // evita gerar muito perto do chão
+
+            BomberSprite alien = new BomberSprite(x, y);
+            badSprites.add(alien);
         }
     }
     
@@ -69,7 +72,7 @@ public class SpaceInvadersBoard extends AbstractBoard{
 
 				if (!shot.isVisible()) {
 
-					shot = new Shot(x, y);
+					shot = new Shot(x, y, player.getDx(), player.getDy());
 				}
 			}
 		}
@@ -95,26 +98,22 @@ public class SpaceInvadersBoard extends AbstractBoard{
 //    }
 
     protected void update() {
-
         if (deaths == Commons.NUMBER_OF_ALIENS_TO_DESTROY) {
-
             inGame = false;
             timer.stop();
             message = "Game won!";
         }
 
-        // player
-        for (Player player: players) 
-        	player.act();
+        // Player
+        for (Player player : players)
+            player.act();
 
-        // shot
+        // Shot
         if (shot.isVisible()) {
-
-            int shotX = shot.getX();
-            int shotY = shot.getY();
+            int shotX = shot.getX() + shot.getDx();
+            int shotY = shot.getY() + shot.getDy();
 
             for (BadSprite alien : badSprites) {
-
                 int alienX = alien.getX();
                 int alienY = alien.getY();
 
@@ -124,84 +123,90 @@ public class SpaceInvadersBoard extends AbstractBoard{
                             && shotY >= (alienY)
                             && shotY <= (alienY + Commons.ALIEN_HEIGHT)) {
 
-                        ImageIcon ii = new ImageIcon(this.getClass().getResource(explImg));
-                        alien.setImage(ii.getImage());
-                        alien.setDying(true);
+                        BomberSprite bomber = (BomberSprite) alien;
+                        bomber.setDeadAlienImg();
+                        bomber.setDx(0);
+                        bomber.setDy(0);
+                        bomber.setDead(true);
                         deaths++;
                         shot.die();
                     }
                 }
             }
 
-            int y = shot.getY();
-            y -= 4;
-
-            if (y < 0) {
+            if (shotY < 0 || shotY > Commons.BOARD_HEIGHT || shotX < 0 || shotX > Commons.BOARD_WIDTH) {
                 shot.die();
             } else {
-                shot.setY(y);
+                shot.setX(shotX);
+                shot.setY(shotY);
             }
         }
 
-        // aliens
-
-        for (BadSprite alien : badSprites) {
-
-            int x = alien.getX();
-
-            if (x >= Commons.BOARD_WIDTH - Commons.BORDER_RIGHT && direction != -1) {
-
-                direction = -1;
-
-                Iterator<BadSprite> i1 = badSprites.iterator();
-
-                while (i1.hasNext()) {
-                    BadSprite a2 = i1.next();
-                    a2.setY(a2.getY() + Commons.GO_DOWN);
-                }
-            }
-
-            if (x <= Commons.BORDER_LEFT && direction != 1) {
-
-                direction = 1;
-
-                Iterator<BadSprite> i2 = badSprites.iterator();
-
-                while (i2.hasNext()) {
-
-                    BadSprite a = i2.next();
-                    a.setY(a.getY() + Commons.GO_DOWN);
-                }
-            }
-        }
-
+        // Aliens
         Iterator<BadSprite> it = badSprites.iterator();
-
         while (it.hasNext()) {
-
             BadSprite alien = it.next();
+            BomberSprite bomber = (BomberSprite) alien;
 
-            if (alien.isVisible()) {
-
+            if (alien.isVisible() && !bomber.isDead()) {
+                int x = alien.getX();
                 int y = alien.getY();
+                int dx = bomber.getDx();
+                int dy = bomber.getDy();
 
-                if (y > Commons.GROUND - Commons.ALIEN_HEIGHT) {
-                    inGame = false;
-                    message = "Invasion!";
+                Random rand = new Random();
+
+                // Movimento horizontal suave
+                if (x + dx < Commons.BORDER_LEFT || x + dx + Commons.ALIEN_WIDTH > Commons.BORDER_RIGHT) {
+                    dx = -dx;  // Inverte a direção horizontal se ultrapassar os limites da tela
+                    bomber.setDx(dx);  // Atualiza a direção horizontal
                 }
 
-                alien.moveX(direction);
+                // Movimento vertical suave
+                if (rand.nextInt(100) < 40) {  // 40% chance de alterar a direção vertical
+                    int newDy = rand.nextInt(3) - 2;  // Velocidades entre -2 e 2
+                    if (newDy != 0) {
+                        bomber.setDy(newDy);
+                    }
+                }
+
+                // Impede que o alien ultrapasse os limites horizontais
+                if (x + dx < Commons.BORDER_LEFT || x + dx + Commons.ALIEN_WIDTH > Commons.BORDER_RIGHT) {
+                    dx = -dx; // Inverte a direção horizontal se ultrapassar os limites da tela
+                    bomber.setDx(dx); // Atualiza a direção horizontal
+                }
+
+                // Impede que o alien ultrapasse os limites verticais
+                if (y + dy < 0) {
+                    dy = 1; // Impede que o alien suba além do topo da tela
+                }
+                if (y + dy + Commons.ALIEN_HEIGHT > Commons.GROUND) {
+                    dy = -1; // Impede que o alien desça além do fundo da tela
+                }
+
+                // Atualiza a posição dos aliens
+                alien.setX(x + dx);
+                alien.setY(y + dy);
+            }
+
+            if(bomber.isDead()){
+                int x = alien.getX();
+                int y = alien.getY();
+                alien.setX(x);
+                alien.setY(y);
             }
         }
 
-        // bombs
-        
+
+        // Update other sprites (bombs)
         updateOtherSprites();
     }
 
-	
 
-    
+
+
+
+
     protected void updateOtherSprites() {
 		Random generator = new Random();
 

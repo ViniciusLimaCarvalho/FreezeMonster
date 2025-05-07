@@ -106,4 +106,12 @@ public class Sprite {
 
         this.y += direction;
     }
+
+    public int getDx() {
+        return dx;
+    }
+
+    public int getDy() {
+        return dy;
+    }
 }
