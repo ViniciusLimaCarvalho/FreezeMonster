@@ -1,4 +1,4 @@
-package spaceinvaders.sprite;
+package freezemonster.sprite;
 
 import javax.swing.ImageIcon;
 

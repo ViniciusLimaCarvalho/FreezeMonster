@@ -1,4 +1,4 @@
-package spaceinvaders;
+package freezemonster;
 
 
 public interface Commons extends spriteframework.Commons{

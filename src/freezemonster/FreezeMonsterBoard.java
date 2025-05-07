@@ -1,4 +1,4 @@
-package spaceinvaders;
+package freezemonster;
 
 
 import java.awt.Graphics;
@@ -13,9 +13,9 @@ import spriteframework.AbstractBoard;
 import spriteframework.sprite.BadSprite;
 import spriteframework.sprite.Player;
 
-import spaceinvaders.sprite.*;
+import freezemonster.sprite.*;
 
-public class SpaceInvadersBoard extends AbstractBoard{  
+public class FreezeMonsterBoard extends AbstractBoard{
     //define sprites
     //private List<BadSprite> aliens;
     private Shot shot;    
@@ -157,23 +157,19 @@ public class SpaceInvadersBoard extends AbstractBoard{
                 Random rand = new Random();
 
                 // Movimento horizontal suave
-                if (x + dx < Commons.BORDER_LEFT || x + dx + Commons.ALIEN_WIDTH > Commons.BORDER_RIGHT) {
-                    dx = -dx;  // Inverte a direção horizontal se ultrapassar os limites da tela
-                    bomber.setDx(dx);  // Atualiza a direção horizontal
+                if (rand.nextInt(100) < 40) {  // 40% chance de alterar a direção horizontal
+                    int newDx = rand.nextInt(5) - 2;  // Velocidades entre -2 e 2
+                    if (newDx != 0) {
+                        bomber.setDx(newDx);
+                    }
                 }
 
                 // Movimento vertical suave
                 if (rand.nextInt(100) < 40) {  // 40% chance de alterar a direção vertical
-                    int newDy = rand.nextInt(3) - 2;  // Velocidades entre -2 e 2
+                    int newDy = rand.nextInt(5) - 2;  // Velocidades entre -2 e 2
                     if (newDy != 0) {
                         bomber.setDy(newDy);
                     }
-                }
-
-                // Impede que o alien ultrapasse os limites horizontais
-                if (x + dx < Commons.BORDER_LEFT || x + dx + Commons.ALIEN_WIDTH > Commons.BORDER_RIGHT) {
-                    dx = -dx; // Inverte a direção horizontal se ultrapassar os limites da tela
-                    bomber.setDx(dx); // Atualiza a direção horizontal
                 }
 
                 // Impede que o alien ultrapasse os limites verticais
@@ -187,20 +183,22 @@ public class SpaceInvadersBoard extends AbstractBoard{
                 // Atualiza a posição dos aliens
                 alien.setX(x + dx);
                 alien.setY(y + dy);
-            }
 
-            if(bomber.isDead()){
-                int x = alien.getX();
-                int y = alien.getY();
-                alien.setX(x);
-                alien.setY(y);
+                // Verifica se o alien morreu
+                if (bomber.isDead()) {
+                    // Quando o alien está morto, ele não se move mais
+                    int newX = x; // Mantém a posição original
+                    int newY = y;
+                    alien.setX(newX);
+                    alien.setY(newY);
+                }
             }
         }
-
 
         // Update other sprites (bombs)
         updateOtherSprites();
     }
+
 
 
 

@@ -1,4 +1,4 @@
-package spaceinvaders.sprite;
+package freezemonster.sprite;
 
 import java.awt.*;
 import java.util.LinkedList;

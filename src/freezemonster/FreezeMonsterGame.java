@@ -1,19 +1,19 @@
-package spaceinvaders;
+package freezemonster;
 
 import java.awt.EventQueue;
 
 import spriteframework.AbstractBoard;
 import spriteframework.MainFrame;
 
-public class SpaceInvadersGame extends MainFrame {
+public class FreezeMonsterGame extends MainFrame {
 
 
-	public SpaceInvadersGame () {
+	public FreezeMonsterGame() {
 		super("Space Invaders");
 	}
 	
 	protected  AbstractBoard createBoard() {
-		return new SpaceInvadersBoard();
+		return new FreezeMonsterBoard();
 	}
 
 
@@ -21,7 +21,7 @@ public class SpaceInvadersGame extends MainFrame {
 
 		EventQueue.invokeLater(() -> {
 
-			new SpaceInvadersGame();
+			new FreezeMonsterGame();
 		});
 	}
 
